@@ -1,0 +1,17 @@
+name: lagon
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/testing # test.sh will create this file and delete after it's used
+        with:
+          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          config: '{
+            "function_id": "function_id_123",
+            "organization_id": "org_id_123",
+          }'

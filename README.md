@@ -1,8 +1,8 @@
-# Lagon Deploy Action
+# Lagon Action
 
-Easily integrate Lagon CLI operations into your Github workflow. Deploy new functions, retrieve a list of existing functions, promote functions, etc. This action supports any arbitrary input of what to do.
+Easily integrate [Lagon](https://lagon.dev) CLI into your Github workflows. Deploy new functions, retrieve a list of existing functions, promote functions, etc. This action supports any [arbitrary input](#other-commands) of what to do!
 
-### Usage
+## Usage
 
 Create the following workflow in your function's repository:
 
@@ -22,18 +22,26 @@ jobs:
     name: Deploy
     steps:
       - uses: actions/checkout@v2
-      - name: Publish
-        uses: lagonapp/github-action@latest
+      - uses: lagonapp/github-action@latest
         with:
           lagon_token: ${{ secrets.LAGON_API_TOKEN }}
-          command: deploy --prod
-          config: '{
-            "function_id":${{ vars.LAGON_FUNCTION_ID }},
-            "organization_id": ${{ vars.LAGON_ORG_ID }},
-          }'
 ```
 
-This will deploy your source code to the specified function after a commit is merged into main.
+This will deploy your source code to the specified function after a commit is pushed into main.
+
+_NOTE: Make sure the repository that gets checked out contains a `.lagon/config.json` file that specifies information such as the function_id and organization_id!_
+
+#### Other commands
+
+If you want to run a different command just specify it with the `command` input:
+
+```bash
+        with:
+          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          command: "promote claxnlc230738q5pa7iximskm ./my-project"
+```
+
+See [CLI](https://docs.lagon.app/cli) docs for more commands.
 
 ## Inputs
 
@@ -42,47 +50,29 @@ Inputs are provided using the `with:` section of your workflow YML file.
 | key         | Description                  | Required | Default                |
 | ----------- | ---------------------------- | -------- | ---------------------- |
 | lagon_token | Your Lagon API token         | true     |                        |
-| command     | The Lagon CLI command to run | true     |                        |
-| config      | API key to Lagon Dashboard   | false    | {}                     |
-| site_url    | Specify Lagon API domain     | flase    | https://dash.lagon.app |
+| command     | The Lagon CLI command to run | false    | deploy --prod          |
+| site_url    | Specify Lagon API domain     | false    | https://dash.lagon.app |
 
 `site_url` is used to specify a custom endpoint if you are using a self-hosted instance of Lagon.
-
-`confiag` is used to specify vairous options for the CLI. This is required when deploying a function because the CLI must know what `function_id` and `organization_id` to use. Additionally, you could specify other inputs like `assets`, `index, and `client`.
-
-The config input is expected to be a JSON string like so:
-
-```
-         config: |
-          {
-            "function_id":"cleoau1wk0000mj0843yvsgi7",
-            "organization_id":"cleeepy2j0006jx08ew36ivpg",
-            "index":"server/index.mjs",
-            "client":null,
-            "assets":"public"
-          }
-```
-
-You can even specify the function_id and organization_id via variables so that you don't have to update your workflow if you need to update your function/fleet:
-
-```
-         config: |
-          {
-            "function_id":"${{ vars.LAGON_FUNCTION_ID }}",
-            "organization_id":"${{ vars.LAGON_ORG_ID }}",
-            ...
-          }
-```
-
-See the github docs on how to specify variables for a repository [here](https://docs.github.com/en/actions/learn-github-actions/variables#creating-configuration-variables-for-a-repository).
 
 ## Outputs
 
 | key | Description | Nullable |
 | --- | ----------- | -------- |
+|     |             |          |
 
 No outputs for now... not sure what the CLI can output, function hash ?
 
-## Development
+## Developing
 
-See the [development](DEVELOPMENT.md) docs.
+There's a test runner [script](test.sh) which uses [act](https://github.com/nektos/act) to call [test_action_workflow.yml](test_action_workflow.yml) which is setup to call the action in this repository.
+
+Export your API token to `LAGON_API_TOKEN` so the test script can pass it to the action:
+
+```bash
+LAGON_API_TOKEN=token123 ./test.sh
+```
+
+### Manual E2E testing
+
+If you want to run the action on Github simply push your branch and then create a repository which has a workflow that uses it. For example, make a workflow with a job that uses `lagonapp/github-action@<branch-you-are-developing>`.
