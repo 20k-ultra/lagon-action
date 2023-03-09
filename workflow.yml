@@ -1,0 +1,22 @@
+name: Lagon
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish
+        uses: lagonapp/github-action@latest
+        with:
+          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          command: deploy --prod
+          config: '{
+            "function_id": "${{ vars.LAGON_FUNCTION_ID }}",
+            "organization_id": "${{ vars.LAGON_ORG_ID }}",
+          }'
